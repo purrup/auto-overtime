@@ -2,6 +2,9 @@ image
 .env
 .DS_Store
 
+# VS Code 個人化設定
+.vscode/settings.json
+
 # 輸出檔案
 output/*.csv
 output/*.xlsx
