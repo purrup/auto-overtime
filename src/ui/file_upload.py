@@ -6,6 +6,7 @@
 import flet as ft
 from pathlib import Path
 from typing import List, Callable, Optional
+from .theme import ColorScheme
 
 
 class FileUploadComponent:
@@ -38,8 +39,10 @@ class FileUploadComponent:
     def _init_components(self) -> None:
         """建立所有 UI 元件"""
         # FilePicker 檔案選擇器
-        self.file_picker = ft.FilePicker(on_result=self._on_file_picked)
+        self.file_picker = ft.FilePicker()
+        self.file_picker.on_result = self._on_file_picker_result
         self.page.overlay.append(self.file_picker)
+        self.page.update()
 
         # 檔案列表視圖
         self.file_list_view = ft.ListView(
@@ -52,13 +55,13 @@ class FileUploadComponent:
         self.file_count_label = ft.Text(
             value="已選擇 0 個檔案",
             size=14,
-            color=ft.colors.GREY_700,
+            color=ColorScheme.TEXT_SECONDARY,
         )
 
         # 選擇檔案按鈕
         self.upload_button = ft.ElevatedButton(
             text="選擇檔案",
-            icon=ft.icons.UPLOAD_FILE,
+            icon=ft.icons.FILE_UPLOAD,
             on_click=self._open_file_picker,
         )
 
@@ -82,32 +85,41 @@ class FileUploadComponent:
             dialog_title="選擇加班單圖片檔案",
         )
 
-    def _on_file_picked(self, e: ft.FilePickerResultEvent) -> None:
+    def _on_file_picker_result(self, e) -> None:
         """處理檔案選擇結果
 
         Args:
             e: FilePicker 結果事件
         """
-        if e.files:
-            # 遍歷選擇的檔案
-            for file in e.files:
-                # 檢查是否已存在（避免重複）
-                if not any(f["path"] == file.path for f in self.selected_files):
-                    # 建立檔案資訊 dict
-                    file_info = {
-                        "name": file.name,
-                        "path": file.path,
-                        "size_kb": round(file.size / 1024, 2),  # 轉換為 KB
-                    }
-                    # 加入到已選擇檔案列表
-                    self.selected_files.append(file_info)
+        # 處理選擇的檔案
+        if self.file_picker.result and self.file_picker.result.files:
+            self._process_selected_files(self.file_picker.result.files)
 
-            # 更新 UI
-            self._update_ui()
+    def _process_selected_files(self, files: list) -> None:
+        """處理選擇的檔案
 
-            # 觸發回調函數
-            if self.on_files_selected:
-                self.on_files_selected(self.selected_files)
+        Args:
+            files: 選擇的檔案列表
+        """
+        # 遍歷選擇的檔案
+        for file in files:
+            # 檢查是否已存在（避免重複）
+            if not any(f["path"] == file.path for f in self.selected_files):
+                # 建立檔案資訊 dict
+                file_info = {
+                    "name": file.name,
+                    "path": file.path,
+                    "size_kb": round(file.size / 1024, 2),  # 轉換為 KB
+                }
+                # 加入到已選擇檔案列表
+                self.selected_files.append(file_info)
+
+        # 更新 UI
+        self._update_ui()
+
+        # 觸發回調函數
+        if self.on_files_selected:
+            self.on_files_selected(self.selected_files)
 
     def _update_ui(self) -> None:
         """更新檔案列表顯示"""
@@ -126,13 +138,13 @@ class FileUploadComponent:
             file_size_text = ft.Text(
                 value=f"{file_info['size_kb']} KB",
                 size=12,
-                color=ft.colors.GREY_600,
+                color=ColorScheme.NEUTRAL_600,
             )
 
             # 刪除按鈕
             delete_button = ft.IconButton(
                 icon=ft.icons.DELETE_OUTLINE,
-                icon_color=ft.colors.RED_400,
+                icon_color=ColorScheme.ERROR,
                 tooltip="移除此檔案",
                 on_click=lambda e, idx=index: self._remove_file(idx),
             )
@@ -145,7 +157,7 @@ class FileUploadComponent:
                             ft.Icon(
                                 name=ft.icons.IMAGE,
                                 size=32,
-                                color=ft.colors.BLUE_400,
+                                color=ColorScheme.PRIMARY,
                             ),
                             ft.Column(
                                 controls=[file_name_text, file_size_text],

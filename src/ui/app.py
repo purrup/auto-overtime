@@ -6,6 +6,7 @@
 import flet as ft
 from typing import List
 from .file_upload import FileUploadComponent
+from .theme import ColorScheme
 from ..config import Config
 
 
@@ -58,7 +59,7 @@ class OvertimeApp:
             icon=ft.icons.PLAY_ARROW,
             on_click=self._on_start_recognition,
             disabled=True,
-            bgcolor=ft.colors.BLUE_700,
+            bgcolor=ColorScheme.PRIMARY,
             color=ft.colors.WHITE,
             height=45,
         )
@@ -68,7 +69,7 @@ class OvertimeApp:
             icon=ft.icons.FILE_DOWNLOAD,
             on_click=self._on_export_csv,
             disabled=True,
-            bgcolor=ft.colors.GREEN_700,
+            bgcolor=ColorScheme.ACCENT,
             color=ft.colors.WHITE,
             height=45,
         )
@@ -77,7 +78,7 @@ class OvertimeApp:
         self.status_text = ft.Text(
             value="請選擇要辨識的加班單檔案...",
             size=14,
-            color=ft.colors.GREY_700,
+            color=ColorScheme.TEXT_SECONDARY,
         )
 
     def _build_ui(self) -> None:
@@ -111,12 +112,12 @@ class OvertimeApp:
                         value="智慧型加班單辨識系統",
                         size=28,
                         weight=ft.FontWeight.BOLD,
-                        color=ft.colors.BLUE_900,
+                        color=ColorScheme.TEXT_PRIMARY,
                     ),
                     ft.Text(
                         value="使用 AI 視覺模型將手寫加班單自動轉換為結構化數位報表",
                         size=14,
-                        color=ft.colors.GREY_700,
+                        color=ColorScheme.TEXT_SECONDARY,
                     ),
                 ],
                 spacing=5,
@@ -137,7 +138,7 @@ class OvertimeApp:
                         value="步驟 1：上傳檔案",
                         size=18,
                         weight=ft.FontWeight.BOLD,
-                        color=ft.colors.BLUE_800,
+                        color=ColorScheme.TEXT_PRIMARY,
                     ),
                     ft.Container(height=10),
                     self.file_upload.build(),
@@ -145,9 +146,9 @@ class OvertimeApp:
                 spacing=0,
             ),
             padding=15,
-            bgcolor=ft.colors.BLUE_50,
-            border=ft.border.all(2, ft.colors.BLUE_200),
-            border_radius=10,
+            bgcolor=ft.colors.WHITE,
+            border=ft.border.all(1, ColorScheme.NEUTRAL_BORDER),
+            border_radius=12,
         )
 
     def _build_action_section(self) -> ft.Container:
@@ -163,7 +164,7 @@ class OvertimeApp:
                         value="步驟 2：辨識與匯出",
                         size=18,
                         weight=ft.FontWeight.BOLD,
-                        color=ft.colors.GREEN_800,
+                        color=ColorScheme.TEXT_PRIMARY,
                     ),
                     ft.Container(height=10),
                     ft.Row(
@@ -177,9 +178,9 @@ class OvertimeApp:
                 spacing=0,
             ),
             padding=15,
-            bgcolor=ft.colors.GREEN_50,
-            border=ft.border.all(2, ft.colors.GREEN_200),
-            border_radius=10,
+            bgcolor=ft.colors.WHITE,
+            border=ft.border.all(1, ColorScheme.NEUTRAL_BORDER),
+            border_radius=12,
         )
 
     def _build_status_bar(self) -> ft.Container:
@@ -193,7 +194,7 @@ class OvertimeApp:
                 controls=[
                     ft.Icon(
                         name=ft.icons.INFO_OUTLINED,
-                        color=ft.colors.GREY_600,
+                        color=ColorScheme.NEUTRAL_600,
                         size=20,
                     ),
                     self.status_text,
@@ -217,12 +218,12 @@ class OvertimeApp:
             # 有檔案：啟用開始辨識按鈕
             self.start_button.disabled = False
             self.status_text.value = f"已選擇 {len(files)} 個檔案，可以開始辨識"
-            self.status_text.color = ft.colors.GREEN_700
+            self.status_text.color = ColorScheme.SUCCESS
         else:
             # 無檔案：禁用開始辨識按鈕
             self.start_button.disabled = True
             self.status_text.value = "請選擇要辨識的加班單檔案..."
-            self.status_text.color = ft.colors.GREY_700
+            self.status_text.color = ColorScheme.TEXT_SECONDARY
 
         self.page.update()
 
@@ -233,7 +234,7 @@ class OvertimeApp:
             e: 事件物件
         """
         self.status_text.value = "辨識功能將在第二階段實作"
-        self.status_text.color = ft.colors.BLUE_700
+        self.status_text.color = ColorScheme.INFO
         self.page.update()
 
     def _on_export_csv(self, e) -> None:
@@ -243,5 +244,5 @@ class OvertimeApp:
             e: 事件物件
         """
         self.status_text.value = "匯出功能將在第三階段實作"
-        self.status_text.color = ft.colors.BLUE_700
+        self.status_text.color = ColorScheme.INFO
         self.page.update()

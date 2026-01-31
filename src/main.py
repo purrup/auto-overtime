@@ -26,10 +26,9 @@ def main(page: ft.Page) -> None:
 
     except Exception as e:
         # 定義關閉應用程式的回調函數
-        def close_app(e) -> None:
+        async def close_app(e) -> None:
             """關閉應用程式"""
-            page.window.close()
-            sys.exit(1)
+            await page.window.close()
 
         # 建立錯誤對話框
         error_dialog = ft.AlertDialog(
@@ -37,7 +36,7 @@ def main(page: ft.Page) -> None:
             title=ft.Text("啟動失敗", weight=ft.FontWeight.BOLD),
             content=ft.Column(
                 [
-                    ft.Icon(ft.icons.ERROR_OUTLINE, size=48, color=ft.colors.RED_400),
+                    ft.Icon(name=ft.icons.ERROR_OUTLINED, size=48, color=ft.colors.RED_400),
                     ft.Text("應用程式啟動失敗", size=16),
                     ft.Container(height=10),
                     ft.Text(str(e), size=14, color=ft.colors.GREY_700)
@@ -46,7 +45,7 @@ def main(page: ft.Page) -> None:
                 tight=True
             ),
             actions=[
-                ft.TextButton("關閉", on_click=close_app)
+                ft.TextButton(text="關閉", on_click=close_app)
             ],
             actions_alignment=ft.MainAxisAlignment.END
         )
