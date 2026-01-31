@@ -23,6 +23,10 @@ pip install -e ".[dev]"  # 包含開發工具
 ```bash
 ./run.sh
 ```
+or
+```bash
+source .venv/bin/activate && python -m src.main 2>&1 | head -50 &
+```
 
 ## 技術架構
 
