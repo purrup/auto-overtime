@@ -157,7 +157,7 @@ python-dotenv>=1.0.0      # 環境變數管理
 
 ---
 
-### 第二階段: AI 整合與測試
+### 第二階段: AI 整合與測試(大致上都透過 poc_tset.py 完成了)
 1. 實作 `VisionClient` (OpenAI Vision API 整合)
 2. 定義 Pydantic 資料模型
 3. 設計並測試 Prompt

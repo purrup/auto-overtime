@@ -1,0 +1,12 @@
+# UI 框架
+flet==0.24.1
+
+# AI 整合
+openai>=1.52.0
+
+# 資料處理
+pandas>=2.0.0
+pydantic>=2.0.0
+
+# 環境變數管理
+python-dotenv>=1.0.0
