@@ -5,6 +5,18 @@ image
 # VS Code 個人化設定
 .vscode/settings.json
 
+# Python 快取檔案
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 虛擬環境目錄
+venv/
+env/
+ENV/
+.venv/
+
 # 輸出檔案
 output/*.csv
 output/*.xlsx
