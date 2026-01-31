@@ -5,5 +5,10 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# 啟動虛擬環境(如果存在)
+if [ -d ".venv" ]; then
+    source .venv/bin/activate
+fi
+
 # 使用正確的 Python 版本運行應用程式
-~/.pyenv/versions/3.13.11/bin/python -m src.main
+python -m src.main

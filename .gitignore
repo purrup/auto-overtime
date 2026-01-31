@@ -11,6 +11,12 @@ __pycache__/
 *$py.class
 *.so
 
+# Python 套件中繼資料
+*.egg-info/
+*.egg
+dist/
+build/
+
 # 虛擬環境目錄
 venv/
 env/
