@@ -40,7 +40,7 @@ class OvertimeEntry(BaseModel):
         description="加班時間（迄），格式為 HH:MM（24小時制）。例如：09:00。若無法辨識填入「無法辨識」"
     )
 
-    reason: str = Field(
+    overtime_reason: str = Field(
         description="加班事由，完整的手寫文字內容。若無法辨識填入「無法辨識」"
     )
 
@@ -79,18 +79,18 @@ def get_image_size_kb(image_path: Path) -> float:
 
 def calculate_cost(prompt_tokens: int, completion_tokens: int) -> float:
     """
-    計算 API 呼叫成本（gpt-4o-mini 定價）
-    Input: $0.150 / 1M tokens
-    Output: $0.600 / 1M tokens
+    計算 API 呼叫成本（gpt-5-mini-2025-08-07 定價）
+    Input: $0.250 / 1M tokens
+    Output: $2 / 1M tokens
     """
-    input_cost = prompt_tokens * 0.150 / 1_000_000
-    output_cost = completion_tokens * 0.600 / 1_000_000
+    input_cost = prompt_tokens * 0.25 / 1_000_000
+    output_cost = completion_tokens * 2 / 1_000_000
     return round(input_cost + output_cost, 6)
 
 
 def create_prompt() -> str:
     """建立 Vision API 的 Prompt"""
-    return """你是一個專業的繁體中文文字辨識專家。
+    return """你是一個專業的繁體中文文字辨識專家，擅長辨識手寫及印刷體的繁體中文。
 
 請仔細觀察這張加班單掃描圖片，**辨識表格中所有的加班記錄列**。
 
@@ -204,7 +204,7 @@ def print_result(
         print(f"日期：{entry.date}")
         print(f"加班時間（起）：{entry.overtime_start_time}")
         print(f"加班時間（迄）：{entry.overtime_end_time}")
-        print(f"加班事由：{entry.reason}")
+        print(f"加班事由：{entry.overtime_reason}")
         print(f"加班類型：{entry.overtime_type}")
         print(f"加班時數：{entry.hours}")
         print()
