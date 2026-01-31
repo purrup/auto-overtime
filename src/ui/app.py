@@ -4,10 +4,10 @@
 """
 
 import flet as ft
-from typing import List
+
+from ..config import Config
 from .file_upload import FileUploadComponent
 from .theme import ColorScheme
-from ..config import Config
 
 
 class OvertimeApp:
@@ -50,27 +50,27 @@ class OvertimeApp:
         self.file_upload = FileUploadComponent(
             page=self.page,
             allowed_extensions=Config.ALLOWED_EXTENSIONS,
-            on_files_selected=self._on_files_updated
+            on_files_selected=self._on_files_updated,
         )
 
         # 操作按鈕
         self.start_button = ft.ElevatedButton(
             text="開始辨識",
-            icon=ft.icons.PLAY_ARROW,
+            icon=ft.Icons.PLAY_ARROW,
             on_click=self._on_start_recognition,
             disabled=True,
             bgcolor=ColorScheme.PRIMARY,
-            color=ft.colors.WHITE,
+            color=ft.Colors.WHITE,
             height=45,
         )
 
         self.export_button = ft.ElevatedButton(
             text="匯出 CSV",
-            icon=ft.icons.FILE_DOWNLOAD,
+            icon=ft.Icons.FILE_DOWNLOAD,
             on_click=self._on_export_csv,
             disabled=True,
             bgcolor=ColorScheme.ACCENT,
-            color=ft.colors.WHITE,
+            color=ft.Colors.WHITE,
             height=45,
         )
 
@@ -86,11 +86,11 @@ class OvertimeApp:
         main_layout = ft.Column(
             controls=[
                 self._build_header(),
-                ft.Divider(height=20, color=ft.colors.TRANSPARENT),
+                ft.Divider(height=20, color=ft.Colors.TRANSPARENT),
                 self._build_upload_section(),
-                ft.Divider(height=20, color=ft.colors.TRANSPARENT),
+                ft.Divider(height=20, color=ft.Colors.TRANSPARENT),
                 self._build_action_section(),
-                ft.Divider(height=10, color=ft.colors.TRANSPARENT),
+                ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
                 self._build_status_bar(),
             ],
             spacing=0,
@@ -146,7 +146,7 @@ class OvertimeApp:
                 spacing=0,
             ),
             padding=15,
-            bgcolor=ft.colors.WHITE,
+            bgcolor=ft.Colors.WHITE,
             border=ft.border.all(1, ColorScheme.NEUTRAL_BORDER),
             border_radius=12,
         )
@@ -178,7 +178,7 @@ class OvertimeApp:
                 spacing=0,
             ),
             padding=15,
-            bgcolor=ft.colors.WHITE,
+            bgcolor=ft.Colors.WHITE,
             border=ft.border.all(1, ColorScheme.NEUTRAL_BORDER),
             border_radius=12,
         )
@@ -193,7 +193,7 @@ class OvertimeApp:
             content=ft.Row(
                 controls=[
                     ft.Icon(
-                        name=ft.icons.INFO_OUTLINED,
+                        name=ft.Icons.INFO_OUTLINED,
                         color=ColorScheme.NEUTRAL_600,
                         size=20,
                     ),
@@ -202,11 +202,11 @@ class OvertimeApp:
                 spacing=10,
             ),
             padding=15,
-            bgcolor=ft.colors.GREY_50,
+            bgcolor=ft.Colors.GREY_50,
             border_radius=10,
         )
 
-    def _on_files_updated(self, files: List) -> None:
+    def _on_files_updated(self, files: list) -> None:
         """檔案更新回調函數
 
         當使用者選擇或移除檔案時觸發，更新按鈕狀態和狀態訊息。

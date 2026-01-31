@@ -3,9 +3,10 @@
 提供檔案選擇、列表顯示、刪除等功能。
 """
 
+from collections.abc import Callable
+
 import flet as ft
-from pathlib import Path
-from typing import List, Callable, Optional
+
 from .theme import ColorScheme
 
 
@@ -16,10 +17,7 @@ class FileUploadComponent:
     """
 
     def __init__(
-        self,
-        page: ft.Page,
-        allowed_extensions: tuple,
-        on_files_selected: Optional[Callable] = None
+        self, page: ft.Page, allowed_extensions: tuple, on_files_selected: Callable | None = None
     ):
         """初始化檔案上傳元件
 
@@ -31,7 +29,7 @@ class FileUploadComponent:
         self.page = page
         self.allowed_extensions = allowed_extensions
         self.on_files_selected = on_files_selected
-        self.selected_files: List[dict] = []
+        self.selected_files: list[dict] = []
 
         # 初始化 UI 元件
         self._init_components()
@@ -61,14 +59,14 @@ class FileUploadComponent:
         # 選擇檔案按鈕
         self.upload_button = ft.ElevatedButton(
             text="選擇檔案",
-            icon=ft.icons.FILE_UPLOAD,
+            icon=ft.Icons.FILE_UPLOAD,
             on_click=self._open_file_picker,
         )
 
         # 清除所有按鈕
         self.clear_button = ft.TextButton(
             text="清除所有",
-            icon=ft.icons.CLEAR_ALL,
+            icon=ft.Icons.CLEAR_ALL,
             on_click=self._on_clear_clicked,
             disabled=True,
         )
@@ -143,7 +141,7 @@ class FileUploadComponent:
 
             # 刪除按鈕
             delete_button = ft.IconButton(
-                icon=ft.icons.DELETE_OUTLINE,
+                icon=ft.Icons.DELETE_OUTLINE,
                 icon_color=ColorScheme.ERROR,
                 tooltip="移除此檔案",
                 on_click=lambda e, idx=index: self._remove_file(idx),
@@ -155,7 +153,7 @@ class FileUploadComponent:
                     content=ft.Row(
                         controls=[
                             ft.Icon(
-                                name=ft.icons.IMAGE,
+                                name=ft.Icons.IMAGE,
                                 size=32,
                                 color=ColorScheme.PRIMARY,
                             ),

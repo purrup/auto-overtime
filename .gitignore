@@ -11,6 +11,9 @@ __pycache__/
 *$py.class
 *.so
 
+# Ruff 快取
+.ruff_cache/
+
 # Python 套件中繼資料
 *.egg-info/
 *.egg

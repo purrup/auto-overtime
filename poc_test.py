@@ -10,16 +10,15 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
 
 from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
-
 # ============================================================
 # 1. Pydantic 資料模型定義
 # ============================================================
+
 
 class OvertimeEntry(BaseModel):
     """單筆加班記錄"""
@@ -56,7 +55,7 @@ class OvertimeEntry(BaseModel):
 class OvertimeDocument(BaseModel):
     """整張加班單文件（可包含多筆記錄）"""
 
-    entries: List[OvertimeEntry] = Field(
+    entries: list[OvertimeEntry] = Field(
         description="加班記錄列表，每一列代表一筆加班記錄。如果圖片中只有一筆記錄，列表就只有一個元素。"
     )
 
@@ -64,6 +63,7 @@ class OvertimeDocument(BaseModel):
 # ============================================================
 # 2. 工具函數
 # ============================================================
+
 
 def encode_image_to_base64(image_path: Path) -> str:
     """將圖片編碼為 Base64 字串"""
@@ -139,11 +139,7 @@ def create_prompt() -> str:
 
 
 def save_result_to_json(
-    result: OvertimeDocument,
-    metadata: dict,
-    token_usage: dict,
-    prompt: str,
-    output_dir: Path
+    result: OvertimeDocument, metadata: dict, token_usage: dict, prompt: str, output_dir: Path
 ) -> Path:
     """將結果儲存為 JSON 檔案"""
 
@@ -161,7 +157,7 @@ def save_result_to_json(
         "recognition_results": [entry.model_dump() for entry in result.entries],
         "total_entries": len(result.entries),
         "token_usage": token_usage,
-        "prompt_used": prompt
+        "prompt_used": prompt,
     }
 
     # 寫入 JSON 檔案（使用繁體中文友善的編碼）
@@ -177,11 +173,7 @@ def print_divider(char: str = "=", length: int = 40):
 
 
 def print_result(
-    image_path: Path,
-    model: str,
-    result: OvertimeDocument,
-    token_usage: dict,
-    output_path: Path
+    image_path: Path, model: str, result: OvertimeDocument, token_usage: dict, output_path: Path
 ):
     """以美化格式印出辨識結果"""
 
@@ -227,6 +219,7 @@ def print_result(
 # ============================================================
 # 3. 主程式
 # ============================================================
+
 
 def main():
     """主程式進入點"""
@@ -280,21 +273,18 @@ def main():
                 {
                     "role": "user",
                     "content": [
-                        {
-                            "type": "text",
-                            "text": prompt
-                        },
+                        {"type": "text", "text": prompt},
                         {
                             "type": "image_url",
                             "image_url": {
                                 "url": f"data:image/jpeg;base64,{base64_image}",
-                                "detail": "high"
-                            }
-                        }
-                    ]
+                                "detail": "high",
+                            },
+                        },
+                    ],
                 }
             ],
-            response_format=OvertimeDocument
+            response_format=OvertimeDocument,
             # temperature=0.1  # gpt-5-mini 不支援自定義 temperature，只能使用預設值
         )
 
@@ -307,7 +297,7 @@ def main():
             "prompt_tokens": usage.prompt_tokens,
             "completion_tokens": usage.completion_tokens,
             "total_tokens": usage.total_tokens,
-            "estimated_cost_usd": calculate_cost(usage.prompt_tokens, usage.completion_tokens)
+            "estimated_cost_usd": calculate_cost(usage.prompt_tokens, usage.completion_tokens),
         }
 
         # 準備 Metadata
@@ -315,7 +305,7 @@ def main():
             "timestamp": datetime.now().isoformat(),
             "model": model,
             "image_path": str(image_path),
-            "image_size_kb": get_image_size_kb(image_path)
+            "image_size_kb": get_image_size_kb(image_path),
         }
 
         # 儲存結果到 JSON
@@ -324,7 +314,7 @@ def main():
             metadata=metadata,
             token_usage=token_usage,
             prompt=prompt,
-            output_dir=output_dir
+            output_dir=output_dir,
         )
 
         # 印出結果
@@ -333,11 +323,11 @@ def main():
             model=model,
             result=result,
             token_usage=token_usage,
-            output_path=output_path
+            output_path=output_path,
         )
 
     except Exception as e:
-        print(f"錯誤：API 呼叫失敗", file=sys.stderr)
+        print("錯誤：API 呼叫失敗", file=sys.stderr)
         print(f"詳細訊息：{str(e)}", file=sys.stderr)
         sys.exit(1)
 

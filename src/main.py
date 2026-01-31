@@ -4,8 +4,8 @@
 主程式進入點
 """
 
-import sys
 import flet as ft
+
 from .config import Config
 from .ui.app import OvertimeApp
 
@@ -36,18 +36,16 @@ def main(page: ft.Page) -> None:
             title=ft.Text("啟動失敗", weight=ft.FontWeight.BOLD),
             content=ft.Column(
                 [
-                    ft.Icon(name=ft.icons.ERROR_OUTLINED, size=48, color=ft.colors.RED_400),
+                    ft.Icon(name=ft.Icons.ERROR_OUTLINED, size=48, color=ft.Colors.RED_400),
                     ft.Text("應用程式啟動失敗", size=16),
                     ft.Container(height=10),
-                    ft.Text(str(e), size=14, color=ft.colors.GREY_700)
+                    ft.Text(str(e), size=14, color=ft.Colors.GREY_700),
                 ],
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                tight=True
+                tight=True,
             ),
-            actions=[
-                ft.TextButton(text="關閉", on_click=close_app)
-            ],
-            actions_alignment=ft.MainAxisAlignment.END
+            actions=[ft.TextButton(text="關閉", on_click=close_app)],
+            actions_alignment=ft.MainAxisAlignment.END,
         )
 
         # 顯示錯誤對話框

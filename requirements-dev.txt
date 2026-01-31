@@ -1,9 +1,8 @@
 -r requirements.txt
 
 # 測試框架
-pytest>=7.4.0
-pytest-cov>=4.1.0
+pytest>=9.0.0
+pytest-cov>=6.0.0
 
-# 程式碼品質
-black>=23.0.0
-ruff>=0.1.0
+# 程式碼品質 - 使用 Ruff 統一處理格式化和檢查
+ruff>=0.14.10

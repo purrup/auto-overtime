@@ -6,7 +6,6 @@
 - OvertimeDocument: 整張加班單文件（可包含多筆記錄）
 """
 
-from typing import List
 from pydantic import BaseModel, Field
 
 
@@ -45,6 +44,6 @@ class OvertimeEntry(BaseModel):
 class OvertimeDocument(BaseModel):
     """整張加班單文件（可包含多筆記錄）"""
 
-    entries: List[OvertimeEntry] = Field(
+    entries: list[OvertimeEntry] = Field(
         description="加班記錄列表，每一列代表一筆加班記錄。如果圖片中只有一筆記錄，列表就只有一個元素。"
     )
