@@ -10,7 +10,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -22,30 +22,42 @@ from pydantic import BaseModel, Field
 # ============================================================
 
 class OvertimeEntry(BaseModel):
-    """加班單資料結構模型"""
+    """單筆加班記錄"""
+
+    employee_name: str = Field(
+        description="員工姓名，從「簽到（退）簽」欄位中的手寫簽名辨識。若無法辨識填入「無法辨識」"
+    )
 
     date: str = Field(
         description="加班日期，格式為 YYYY-MM-DD。若為民國年則需轉換為西元年（民國年+1911=西元年）。若無法辨識填入「無法辨識」"
     )
 
-    sign_in_time: str = Field(
-        description="簽到時間，格式為 HH:MM（24小時制）。例如：14:16。若無法辨識填入「無法辨識」"
+    overtime_start_time: str = Field(
+        description="加班時間（起），格式為 HH:MM（24小時制）。例如：08:00。若無法辨識填入「無法辨識」"
     )
 
-    sign_out_time: str = Field(
-        description="簽退時間，格式為 HH:MM（24小時制）。例如：18:30。若無法辨識填入「無法辨識」"
-    )
-
-    overtime_period: str = Field(
-        description="加班時段類型，例如「下班後」、「例假日」、「休息日」等。若無法辨識填入「無法辨識」"
+    overtime_end_time: str = Field(
+        description="加班時間（迄），格式為 HH:MM（24小時制）。例如：09:00。若無法辨識填入「無法辨識」"
     )
 
     reason: str = Field(
         description="加班事由，完整的手寫文字內容。若無法辨識填入「無法辨識」"
     )
 
+    overtime_type: str = Field(
+        description="加班類型，例如「加班費」、「補休」等。若無法辨識填入「無法辨識」"
+    )
+
     hours: float = Field(
-        description="加班時數，數值型態，單位為小時。例如：4.5 表示 4.5 小時。若無法辨識填入 0.0"
+        description="加班時數，數值型態，單位為小時。例如：1.0 表示 1 小時。若無法辨識填入 0.0"
+    )
+
+
+class OvertimeDocument(BaseModel):
+    """整張加班單文件（可包含多筆記錄）"""
+
+    entries: List[OvertimeEntry] = Field(
+        description="加班記錄列表，每一列代表一筆加班記錄。如果圖片中只有一筆記錄，列表就只有一個元素。"
     )
 
 
@@ -78,43 +90,52 @@ def calculate_cost(prompt_tokens: int, completion_tokens: int) -> float:
 
 def create_prompt() -> str:
     """建立 Vision API 的 Prompt"""
-    return """你是一個專業的繁體中文手寫文字辨識專家。
+    return """你是一個專業的繁體中文文字辨識專家。
 
-請仔細觀察這張加班單掃描圖片，**只辨識手寫內容，完全忽略印刷體表格框架**。
+請仔細觀察這張加班單掃描圖片，**辨識表格中所有的加班記錄列**。
 
-請提取以下資訊：
+**重要**：
+- 一張圖片可能包含多筆加班記錄（多列）
+- 請逐列辨識，每一列都是一筆獨立的加班記錄
+- 主要辨識手寫內容，但「加班事由」欄位通常是印刷體，也需要讀取
 
-1. **日期**：找到日期欄位的手寫內容
-   - 如果是民國年（例如 113），請轉換為西元年（民國年 + 1911 = 西元年）
-   - 輸出格式：YYYY-MM-DD（例如：2024-01-23）
+對於每一筆加班記錄，請提取以下資訊：
 
-2. **簽到時間**：找到簽到時間欄位的手寫內容
-   - 輸出格式：HH:MM（24小時制，例如：14:16）
+1. **員工姓名**：從「簽到（退）簽」欄位中的手寫簽名辨識
 
-3. **簽退時間**：找到簽退時間欄位的手寫內容
-   - 輸出格式：HH:MM（24小時制，例如：18:30）
+2. **日期**：找到日期欄位的手寫內容
+   - 如果是民國年（例如 114），請轉換為西元年（民國年 + 1911 = 西元年）
+   - 輸出格式：YYYY-MM-DD（例如：2025-11-22）
 
-4. **加班時段**：找到加班時段類型的手寫內容或勾選記號
-   - 可能的值：「下班後」、「例假日」、「休息日」等
-   - 請根據圖片中的勾選或手寫內容判斷
+3. **加班時間（起）**：找到「加班時間」表格中「起」欄位的手寫內容
+   - 輸出格式：HH:MM（24小時制，例如：08:00）
 
-5. **加班事由**：找到加班事由欄位的手寫內容
-   - 這是完整的手寫文字段落
-   - 請盡可能完整辨識所有手寫文字
+4. **加班時間（迄）**：找到「加班時間」表格中「迄」欄位的手寫內容
+   - 輸出格式：HH:MM（24小時制，例如：09:00）
 
-6. **加班時數**：找到加班時數欄位的手寫內容
-   - 輸出為數值（例如：4.5）
+5. **加班事由**：找到「加 班 事 由」欄位的內容
+   - **注意**：此欄位通常是印刷體/打字內容，不是手寫
+   - **請讀取該欄位格子內的完整內容，包括括號內的補充說明**
+   - **絕對不要讀取加 班 事 由」欄位右邊的「無法線上申請事由」欄位下方的印刷體/打字內容**
+   - **只讀取表格主體內「加班事由」欄位中對應該列的完整文字**
+   - 如果該欄位有多行文字，請完整讀取所有內容
+
+6. **申請類別**：找到「加班」或「補休」欄位中的印刷體內容
+   - 可能的值：「加班費」、「補休」
+
+7. **加班時數**：找到加班時數欄位的內容
+   - 輸出為數值（例如：1.0）
 
 **重要提醒**：
-- 只辨識手寫筆跡，忽略印刷體的欄位名稱和框線
-- 如果某個欄位無法辨識或為空白，請填入「無法辨識」
+- 請辨識圖片中所有的加班記錄列，不要遺漏任何一筆
+- 每一列都是一個獨立的 OvertimeEntry
+- 如果某個欄位無法辨識，請填入「無法辨識」
 - 時數如果無法辨識，請填入 0.0
-- 請特別注意繁體中文的辨識準確度
 """
 
 
 def save_result_to_json(
-    result: OvertimeEntry,
+    result: OvertimeDocument,
     metadata: dict,
     token_usage: dict,
     prompt: str,
@@ -133,7 +154,8 @@ def save_result_to_json(
     # 組合輸出資料
     output_data = {
         "test_metadata": metadata,
-        "recognition_result": result.model_dump(),
+        "recognition_results": [entry.model_dump() for entry in result.entries],
+        "total_entries": len(result.entries),
         "token_usage": token_usage,
         "prompt_used": prompt
     }
@@ -153,7 +175,7 @@ def print_divider(char: str = "=", length: int = 40):
 def print_result(
     image_path: Path,
     model: str,
-    result: OvertimeEntry,
+    result: OvertimeDocument,
     token_usage: dict,
     output_path: Path
 ):
@@ -167,18 +189,21 @@ def print_result(
     print(f"測試圖片：{image_path}")
     print(f"模型：{model}")
     print(f"時間：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"辨識到 {len(result.entries)} 筆加班記錄")
     print()
 
-    print_divider()
-    print("辨識結果")
-    print_divider()
-    print(f"日期：{result.date}")
-    print(f"簽到時間：{result.sign_in_time}")
-    print(f"簽退時間：{result.sign_out_time}")
-    print(f"加班時段：{result.overtime_period}")
-    print(f"加班事由：{result.reason}")
-    print(f"加班時數：{result.hours}")
-    print()
+    for idx, entry in enumerate(result.entries, 1):
+        print_divider()
+        print(f"辨識結果 #{idx}")
+        print_divider()
+        print(f"員工姓名：{entry.employee_name}")
+        print(f"日期：{entry.date}")
+        print(f"加班時間（起）：{entry.overtime_start_time}")
+        print(f"加班時間（迄）：{entry.overtime_end_time}")
+        print(f"加班事由：{entry.reason}")
+        print(f"加班類型：{entry.overtime_type}")
+        print(f"加班時數：{entry.hours}")
+        print()
 
     print_divider()
     print("Token 使用統計")
@@ -221,7 +246,8 @@ def main():
 
     # 設定檔案路徑
     project_root = Path(__file__).parent
-    image_path = project_root / "image" / "SKM_C550i26012311580.jpg"
+    # image_path = project_root / "image" / "SKM_C550i26012311580.jpg"
+    image_path = project_root / "image" / "1769137764441.jpg"
     output_dir = project_root / "poc_results"
 
     # 檢查圖片檔案是否存在
@@ -264,7 +290,7 @@ def main():
                     ]
                 }
             ],
-            response_format=OvertimeEntry
+            response_format=OvertimeDocument
             # temperature=0.1  # gpt-5-mini 不支援自定義 temperature，只能使用預設值
         )
 
