@@ -35,7 +35,7 @@
 - 需使用真實加班單進行 POC 測試驗證準確率
 
 #### 3. **成本效益**
-- 使用 `gpt-4.1-mini` 模型
+- 使用 `gpt-5-mini` 模型
 - 1024×1024 加班單圖片 ≈ 1,659 tokens
 - **單張成本: ~$0.002 USD (不到 0.1 台幣)**
 - 與傳統 OCR 成本相近,但開發效率更高
@@ -90,7 +90,7 @@
 
 ### 2. AI 辨識模組
 
-**模型選擇**: `gpt-4.1-mini` (推薦)
+**模型選擇**: `gpt-5-mini` (推薦)
 
 **資料模型** (Pydantic):
 - `OvertimeEntry`: 單筆加班記錄
@@ -133,7 +133,7 @@
 **環境變數** (.env):
 ```
 OPENAI_API_KEY=your_api_key_here
-OPENAI_MODEL=gpt-4.1-mini
+OPENAI_MODEL=gpt-5-mini-2025-08-07
 OUTPUT_DIR=./output
 ```
 
@@ -292,7 +292,7 @@ python-dotenv>=1.0.0      # 環境變數管理
 4. **驗證成本**: 確認實際 token 使用量符合預期
 
 **POC 測試腳本範例架構**:
-- 讀取 image/ 目錄中的測試圖片
+- 讀取 image/ 目錄中的測試圖片(image/SKM_C550i26012311580.jpg)
 - 呼叫 Vision API with 不同 Prompt 變體
 - 比較辨識結果與實際內容
 - 記錄 token 使用量和成本
