@@ -34,13 +34,13 @@ class FileUploadComponent:
         # 初始化 UI 元件
         self._init_components()
 
+        # 立即將 FilePicker 添加到 page.overlay（Flet 要求在初始化階段完成）
+        self.page.overlay.append(self.file_picker)
+
     def _init_components(self) -> None:
         """建立所有 UI 元件"""
         # FilePicker 檔案選擇器
-        self.file_picker = ft.FilePicker()
-        self.file_picker.on_result = self._on_file_picker_result
-        self.page.overlay.append(self.file_picker)
-        self.page.update()
+        self.file_picker = ft.FilePicker(on_result=self._on_file_picker_result)
 
         # 檔案列表視圖
         self.file_list_view = ft.ListView(
@@ -77,6 +77,7 @@ class FileUploadComponent:
         Args:
             e: 按鈕點擊事件
         """
+        # 直接開啟檔案選擇對話框（FilePicker 已在 __init__ 中添加到 overlay）
         self.file_picker.pick_files(
             allow_multiple=True,
             allowed_extensions=list(self.allowed_extensions),

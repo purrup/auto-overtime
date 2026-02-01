@@ -9,7 +9,7 @@ description = "AI-powered handwritten overtime form recognition system"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-    "flet==0.28.3",
+    "flet==0.28.2",
     "openai>=2.11.0",
     "pandas>=2.0.3",
     "pydantic>=2.12.0",
