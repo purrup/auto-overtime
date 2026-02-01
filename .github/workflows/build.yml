@@ -17,9 +17,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # - os: macos-latest
-          #   platform: macos
-          #   artifact-name: auto-overtime-macos
+          - os: macos-latest
+            platform: macos
+            artifact-name: auto-overtime-macos
           - os: windows-latest
             platform: windows
             artifact-name: auto-overtime-windows
