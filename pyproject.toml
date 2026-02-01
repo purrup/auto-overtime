@@ -29,6 +29,10 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.flet.app]
+# Flet 應用程式配置
+module = "src/main.py"
+
 [tool.ruff]
 # 與 Black 相同的行長度(保持專案原有的 100)
 line-length = 100
