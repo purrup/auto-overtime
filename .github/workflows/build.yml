@@ -17,9 +17,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
-            platform: macos
-            artifact-name: auto-overtime-macos
+          # - os: macos-latest
+          #   platform: macos
+          #   artifact-name: auto-overtime-macos
           - os: windows-latest
             platform: windows
             artifact-name: auto-overtime-windows
@@ -40,7 +40,9 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build Flet app
-        run: flet build ${{ matrix.platform }}
+        env:
+          PYTHONIOENCODING: utf-8
+        run: flet build ${{ matrix.platform }} --module-name src/main.py
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
