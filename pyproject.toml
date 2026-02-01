@@ -34,6 +34,12 @@ where = ["src"]
 # 指定應用程式所在的目錄路徑
 path = "src"
 
+# 🔧 修復 GitHub Actions 建置問題
+# 覆寫 Flutter 依賴版本以避免 "language version 3.9" 錯誤
+# 參考：https://github.com/flet-dev/flet/issues/5666
+[tool.flet.flutter.pubspec.dependency_overrides]
+webview_flutter_android = "4.10.1"
+
 [tool.ruff]
 # 與 Black 相同的行長度(保持專案原有的 100)
 line-length = 100
