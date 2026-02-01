@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 專案概述
 
-智慧型加班單辨識自動化系統 - 使用 AI 視覺模型將手寫加班單掃描檔自動轉換為結構化數位報表(Excel/CSV)。
+加班單辨識自動化系統 - 使用 AI 視覺模型將手寫加班單掃描檔自動轉換為結構化數位報表(Excel/CSV)。
 
 ## 技術架構
 

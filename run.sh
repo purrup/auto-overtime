@@ -1,5 +1,5 @@
 #!/bin/bash
-# 智慧型加班單辨識系統 - 啟動腳本
+# 加班單辨識系統 - 啟動腳本
 
 # 取得腳本所在目錄
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -13,6 +13,6 @@ if [ ! -d ".venv" ]; then
 fi
 
 # 直接使用虛擬環境的 Python (不依賴 activate)
-echo "🚀 啟動智慧型加班單辨識系統..."
+echo "🚀 啟動加班單辨識系統..."
 echo "📍 使用 Python: .venv/bin/python"
 .venv/bin/python -m src.main
