@@ -9,15 +9,15 @@ from pathlib import Path
 
 import flet as ft
 
-from ..ai_extraction.vision_client import VisionAPIError, VisionClient
-from ..config import Config
-from ..data_handling.json_handler import JSONDataHandler
-from ..image_processing.encoder import ImageEncoder, ImageEncodingError
-from .editable_table import EditableTableComponent
-from .file_upload import FileUploadComponent
-from .image_gallery import ImageGalleryComponent
-from .progress_indicator import ProgressIndicator
-from .theme import ColorScheme
+from ai_extraction.vision_client import VisionAPIError, VisionClient
+from config import Config
+from data_handling.json_handler import JSONDataHandler
+from image_processing.encoder import ImageEncoder, ImageEncodingError
+from ui.editable_table import EditableTableComponent
+from ui.file_upload import FileUploadComponent
+from ui.image_gallery import ImageGalleryComponent
+from ui.progress_indicator import ProgressIndicator
+from ui.theme import ColorScheme
 
 
 class OvertimeApp:

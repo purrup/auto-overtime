@@ -5,7 +5,7 @@
 
 import flet as ft
 
-from .theme import ColorScheme
+from ui.theme import ColorScheme
 
 
 class ProgressIndicator:

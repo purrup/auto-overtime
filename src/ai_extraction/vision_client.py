@@ -7,9 +7,9 @@ Vision API 客戶端模組
 import openai
 from openai import OpenAI
 
-from ..config import Config
-from ..models.overtime import OvertimeDocument
-from .prompt_templates import PromptTemplates
+from ai_extraction.prompt_templates import PromptTemplates
+from config import Config
+from models.overtime import OvertimeDocument
 
 
 class VisionAPIError(Exception):

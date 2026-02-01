@@ -6,8 +6,8 @@
 
 import flet as ft
 
-from .config import Config
-from .ui.app import OvertimeApp
+from config import Config
+from ui.app import OvertimeApp
 
 
 def main(page: ft.Page) -> None:
