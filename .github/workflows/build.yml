@@ -42,7 +42,7 @@ jobs:
       - name: Build Flet app
         env:
           PYTHONIOENCODING: utf-8
-        run: flet build ${{ matrix.platform }} --module-name src/main.py
+        run: flet build ${{ matrix.platform }}
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
