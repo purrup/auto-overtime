@@ -11,8 +11,11 @@ import flet as ft
 
 from ..ai_extraction.vision_client import VisionAPIError, VisionClient
 from ..config import Config
+from ..data_handling.json_handler import JSONDataHandler
 from ..image_processing.encoder import ImageEncoder, ImageEncodingError
+from .editable_table import EditableTableComponent
 from .file_upload import FileUploadComponent
+from .image_gallery import ImageGalleryComponent
 from .progress_indicator import ProgressIndicator
 from .theme import ColorScheme
 
@@ -366,6 +369,7 @@ class OvertimeApp:
                 "cost_usd": api_result["cost_usd"],
                 "output_path": output_path,
                 "image_count": len(base64_images),
+                "image_paths": image_paths,  # 新增這行
             }
 
             self.page.run_thread(lambda: self._on_recognition_success(result_data))
@@ -388,46 +392,101 @@ class OvertimeApp:
         # 隱藏進度條
         self.progress_indicator.hide()
 
-        # 計算總時數
+        # 儲存當前的 output_path 和 image_paths 到實例變數（供後續儲存使用）
+        self.current_result_path = result_data["output_path"]
+        self.current_image_paths = result_data["image_paths"]
+
+        # 計算統計資訊
         total_hours = sum(entry.hours for entry in result_data["result"].entries)
+        image_count = result_data["image_count"]
+        entry_count = len(result_data["result"].entries)
 
-        # 顯示結果摘要
-        result_summary = f"""✓ 辨識完成！
+        # 建立統計資訊文字（簡化版）
+        summary_text = f"處理圖片：{image_count} 張 | 辨識記錄：{entry_count} 筆 | 總加班時數：{total_hours} 小時"
 
-處理圖片：{result_data["image_count"]} 張
-辨識記錄：{len(result_data["result"].entries)} 筆
-總加班時數：{total_hours} 小時
+        # 建立圖片展示元件
+        image_gallery = ImageGalleryComponent(self.page, self.current_image_paths)
 
-Token 使用：
-  - Prompt: {result_data["token_usage"]["prompt_tokens"]}
-  - Completion: {result_data["token_usage"]["completion_tokens"]}
-  - Total: {result_data["token_usage"]["total_tokens"]}
+        # 將 Pydantic 模型轉換為 dict 列表
+        entries_dict = [entry.model_dump() for entry in result_data["result"].entries]
 
-估算成本：${result_data["cost_usd"]:.6f} USD
+        # 建立可編輯表格元件
+        editable_table = EditableTableComponent(
+            self.page,
+            entries_dict,
+            on_data_changed=self._on_table_data_changed,
+        )
 
-結果已儲存至：
-{result_data["output_path"]}
-"""
-
-        self.result_text.value = result_summary
+        # 更新結果容器內容
+        self.result_container.content = ft.Column(
+            controls=[
+                ft.Text(
+                    "步驟 3：檢視與編輯",
+                    size=18,
+                    weight=ft.FontWeight.BOLD,
+                    color=ColorScheme.TEXT_PRIMARY,
+                ),
+                ft.Container(height=10),
+                ft.Text(
+                    summary_text,
+                    size=14,
+                    color=ColorScheme.TEXT_SECONDARY,
+                ),
+                ft.Divider(),
+                ft.Text(
+                    "原始圖片",
+                    size=16,
+                    weight=ft.FontWeight.BOLD,
+                    color=ColorScheme.TEXT_PRIMARY,
+                ),
+                ft.Container(height=5),
+                image_gallery.build(),
+                ft.Divider(),
+                ft.Text(
+                    "辨識結果 (可編輯)",
+                    size=16,
+                    weight=ft.FontWeight.BOLD,
+                    color=ColorScheme.TEXT_PRIMARY,
+                ),
+                ft.Container(height=5),
+                editable_table.build(),
+            ],
+            spacing=10,
+        )
         self.result_container.visible = True
 
-        # 啟用匯出按鈕
-        self.export_button.disabled = False
-
-        # 恢復其他按鈕
+        # 恢復按鈕狀態
         self.start_button.disabled = False
         self.file_upload.upload_button.disabled = False
         self.file_upload.clear_button.disabled = False
 
         # 更新狀態列
-        self.status_text.value = f"辨識完成！共 {len(result_data['result'].entries)} 筆記錄"
+        self.status_text.value = f"辨識完成！共 {entry_count} 筆記錄"
         self.status_text.color = ColorScheme.SUCCESS
 
         # 顯示 SnackBar
         self._show_snackbar("辨識完成！")
 
         self.page.update()
+
+    def _on_table_data_changed(self, entries: list[dict]) -> None:
+        """表格資料變更時的回調函數
+
+        Args:
+            entries: 更新後的辨識記錄列表
+        """
+        try:
+            # 儲存到 JSON
+            JSONDataHandler.update_entries(self.current_result_path, entries)
+
+            # 顯示儲存提示（靜默，不干擾）
+            self.status_text.value = "變更已自動儲存"
+            self.status_text.color = ColorScheme.SUCCESS
+            self.page.update()
+
+        except Exception as e:
+            # 錯誤處理
+            self._show_snackbar(f"儲存失敗：{str(e)}", is_error=True)
 
     def _on_recognition_error(self, error_message: str) -> None:
         """辨識失敗回調（主執行緒）
