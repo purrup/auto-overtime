@@ -130,7 +130,7 @@ class OvertimeApp:
             content=ft.Column(
                 controls=[
                     ft.Text(
-                        value="智慧型加班單辨識系統",
+                        value="加班單辨識系統",
                         size=28,
                         weight=ft.FontWeight.BOLD,
                         color=ColorScheme.TEXT_PRIMARY,

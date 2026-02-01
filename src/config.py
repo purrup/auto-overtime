@@ -35,7 +35,7 @@ class Config:
     OUTPUT_DIR: Path = Path(os.getenv("OUTPUT_DIR", "./output"))
 
     # 應用程式 UI 配置
-    APP_TITLE: str = "智慧型加班單辨識系統"
+    APP_TITLE: str = "加班單辨識系統"
     WINDOW_WIDTH: int = 1200
     WINDOW_HEIGHT: int = 800
 

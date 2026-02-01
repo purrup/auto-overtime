@@ -29,7 +29,7 @@ class OvertimeEntry(BaseModel):
     )
 
     overtime_reason: str = Field(
-        description="加班事由，完整的手寫文字內容。若無法辨識填入「無法辨識」"
+        description="加班事由，完整的手寫或是印刷文字內容。若無法辨識填入「無法辨識」"
     )
 
     overtime_type: str = Field(
