@@ -50,5 +50,5 @@ jobs:
         with:
           name: ${{ matrix.artifact-name }}
           path: build/${{ matrix.platform }}/
-          retention-days: 7
+          retention-days: 1
           if-no-files-found: error
