@@ -5,6 +5,7 @@
 """
 
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -16,6 +17,39 @@ class ConfigError(Exception):
     pass
 
 
+def _load_env_file():
+    """
+    載入 .env 檔案,支援多種環境:
+    1. 系統環境變數 (最高優先級)
+    2. 打包環境: src/assets/.env (被打包進應用程式)
+    3. 開發環境: 專案根目錄的 .env
+    """
+    # 優先順序 1: 系統環境變數 (如果已存在就不載入檔案)
+    if os.getenv("OPENAI_API_KEY"):
+        print("✓ 從系統環境變數載入配置")
+        return True
+
+    # 優先順序 2: src/assets/.env (打包後的位置)
+    # 這是 Flet 官方建議的配置檔案存放位置
+    assets_env = Path(__file__).parent / "assets" / ".env"
+    if assets_env.exists():
+        load_dotenv(assets_env)
+        print(f"✓ 從 {assets_env} 載入配置")
+        return True
+
+    # 優先順序 3: 專案根目錄 .env (開發環境)
+    if not getattr(sys, "frozen", False):
+        # 開發環境:搜尋專案根目錄
+        project_root = Path(__file__).parent.parent
+        root_env = project_root / ".env"
+        if root_env.exists():
+            load_dotenv(root_env)
+            print(f"✓ 從 {root_env} 載入配置 (開發環境)")
+            return True
+
+    return False
+
+
 class Config:
     """
     應用程式配置類別
@@ -24,7 +58,7 @@ class Config:
     """
 
     # 載入環境變數
-    load_dotenv()
+    _env_loaded = _load_env_file()
 
     # API 配置
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")

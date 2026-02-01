@@ -1,0 +1,2 @@
+# 此檔案確保 assets 目錄被 Git 追蹤
+# .env 檔案會在 GitHub Actions 打包時動態建立

@@ -1,5 +1,7 @@
 image
 .env
+src/.env
+src/assets/.env
 .DS_Store
 
 # VS Code 個人化設定

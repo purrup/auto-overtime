@@ -39,6 +39,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Create .env file from secrets
+        shell: bash
+        run: |
+          # 建立專案根目錄的 .env (開發環境相容)
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > .env
+          echo "OPENAI_MODEL=${{ secrets.OPENAI_MODEL || 'gpt-5-mini-2025-08-07' }}" >> .env
+          echo "✓ .env file created in project root"
+
+          # 建立 src/assets 目錄並複製 .env (打包環境)
+          mkdir -p src/assets
+          cp .env src/assets/.env
+          echo "✓ .env file copied to src/assets/ directory"
+
+          # 驗證檔案存在
+          ls -la src/assets/.env
+
       - name: Build Flet app
         env:
           PYTHONIOENCODING: utf-8
