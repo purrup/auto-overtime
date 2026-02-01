@@ -85,18 +85,21 @@ class ImageGalleryComponent:
             )
 
         # 正常顯示圖片（使用 ft.ImageFit.COVER）
-        return ft.Container(
-            content=ft.Image(
-                src=image_path,
-                width=150,
-                height=150,
-                fit=ft.ImageFit.COVER,
+        return ft.GestureDetector(
+            content=ft.Container(
+                content=ft.Image(
+                    src=image_path,
+                    width=150,
+                    height=150,
+                    fit=ft.ImageFit.COVER,
+                    border_radius=8,
+                ),
                 border_radius=8,
+                border=ft.border.all(1, ColorScheme.NEUTRAL_BORDER),
+                tooltip="點擊放大查看",
             ),
-            on_click=lambda e, path=image_path: self._show_fullsize_dialog(path),
-            border_radius=8,
-            border=ft.border.all(1, ColorScheme.NEUTRAL_BORDER),
-            tooltip="點擊放大查看",
+            on_tap=lambda _, path=image_path: self._show_fullsize_dialog(path),
+            mouse_cursor=ft.MouseCursor.CLICK,
         )
 
     def _show_fullsize_dialog(self, image_path: str) -> None:
@@ -105,6 +108,8 @@ class ImageGalleryComponent:
         Args:
             image_path: 圖片路徑
         """
+        # 調試信息:確認事件被觸發
+        print(f"[DEBUG] 圖片被點擊: {image_path}")
 
         def close_dialog(e):
             dialog.open = False
@@ -127,7 +132,7 @@ class ImageGalleryComponent:
             actions_alignment=ft.MainAxisAlignment.END,
         )
 
-        # 使用官方推薦方式
-        self.page.dialog = dialog
+        # Flet 0.28.2 最可靠的方式:使用 page.overlay
+        self.page.overlay.append(dialog)
         dialog.open = True
         self.page.update()
