@@ -31,8 +31,8 @@ where = ["src"]
 
 [tool.flet.app]
 # Flet 應用程式配置
-# 注意:只需要檔案名稱,Flet 已預設會在 src 目錄中尋找
-module = "main.py"
+# 指定應用程式所在的目錄路徑
+path = "src"
 
 [tool.ruff]
 # 與 Black 相同的行長度(保持專案原有的 100)
