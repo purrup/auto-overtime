@@ -4,6 +4,8 @@ OpenAI Vision Provider 模組
 實作 VisionProvider 介面，負責與 OpenAI Vision API 通訊，處理批次圖片辨識和錯誤處理。
 """
 
+import time
+
 import openai
 from openai import AsyncOpenAI
 
@@ -42,7 +44,7 @@ class OpenAIVisionProvider(VisionProvider):
             base64_images: Base64 編碼的圖片列表
 
         Returns:
-            RecognitionResult: 包含辨識結果、token 使用量和費用的字典
+            RecognitionResult: 包含辨識結果、token 使用量和處理時間的字典
                 {
                     "result": OvertimeDocument,  # Pydantic 模型
                     "token_usage": {
@@ -50,13 +52,15 @@ class OpenAIVisionProvider(VisionProvider):
                         "completion_tokens": int,
                         "total_tokens": int
                     },
-                    "cost_usd": float
+                    "processing_time_seconds": float
                 }
 
         Raises:
             VisionAPIError: API 呼叫失敗
         """
         try:
+            start_time = time.time()
+
             # 取得 Prompt 範本
             prompt = PromptTemplates.get_overtime_recognition_prompt()
 
@@ -95,10 +99,10 @@ class OpenAIVisionProvider(VisionProvider):
                 "total_tokens": usage.total_tokens,
             }
 
-            # 計算成本
-            cost_usd = self.calculate_cost(usage.prompt_tokens, usage.completion_tokens)
+            # 計算處理時間
+            processing_time = round(time.time() - start_time, 2)
 
-            return {"result": result, "token_usage": token_usage, "cost_usd": cost_usd}
+            return {"result": result, "token_usage": token_usage, "processing_time_seconds": processing_time}
 
         except openai.AuthenticationError as e:
             raise VisionAPIError("API Key 無效，請檢查 .env 檔案中的 OPENAI_API_KEY 設定") from e
@@ -109,21 +113,3 @@ class OpenAIVisionProvider(VisionProvider):
         except Exception as e:
             raise VisionAPIError(f"API 呼叫失敗：{str(e)}") from e
 
-    @staticmethod
-    def calculate_cost(prompt_tokens: int, completion_tokens: int) -> float:
-        """計算 API 呼叫成本
-
-        使用 gpt-5-mini-2025-08-07 定價：
-        - Input: $0.250 / 1M tokens
-        - Output: $2 / 1M tokens
-
-        Args:
-            prompt_tokens: Prompt tokens 數量
-            completion_tokens: Completion tokens 數量
-
-        Returns:
-            成本（美元）
-        """
-        input_cost = prompt_tokens * 0.25 / 1_000_000
-        output_cost = completion_tokens * 2 / 1_000_000
-        return round(input_cost + output_cost, 6)

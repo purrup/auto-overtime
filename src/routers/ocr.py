@@ -200,7 +200,7 @@ async def show_result(request: Request, session_id: str):
             "image_count": image_count,
             "image_filenames": image_filenames,
             "token_usage": result.get("token_usage", {}),
-            "cost_usd": result.get("cost_usd", 0),
+            "processing_time_seconds": result.get("processing_time_seconds", 0),
         },
     )
 

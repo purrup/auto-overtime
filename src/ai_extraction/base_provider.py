@@ -15,7 +15,7 @@ class RecognitionResult(TypedDict):
 
     result: OvertimeDocument
     token_usage: dict
-    cost_usd: float
+    processing_time_seconds: float
 
 
 class VisionProvider(ABC):
@@ -30,6 +30,6 @@ class VisionProvider(ABC):
             base64_images: Base64 編碼的圖片列表
 
         Returns:
-            RecognitionResult: 包含辨識結果、token 使用量和費用的字典
+            RecognitionResult: 包含辨識結果、token 使用量和處理時間的字典
         """
         pass

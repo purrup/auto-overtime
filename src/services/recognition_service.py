@@ -61,7 +61,7 @@ class RecognitionService:
                 - session_id: 會話 ID
                 - result: OvertimeDocument 辨識結果
                 - token_usage: Token 使用統計
-                - cost_usd: API 成本（美元）
+                - processing_time_seconds: 處理時間（秒）
                 - output_path: 結果檔案路徑
                 - image_count: 處理圖片數量
                 - image_paths: 原始圖片路徑列表
@@ -109,7 +109,7 @@ class RecognitionService:
                 "session_id": session_id,
                 "result": api_result["result"],
                 "token_usage": api_result["token_usage"],
-                "cost_usd": api_result["cost_usd"],
+                "processing_time_seconds": api_result["processing_time_seconds"],
                 "output_path": str(output_path),
                 "image_count": len(base64_images),
                 "image_paths": image_paths,
@@ -175,7 +175,7 @@ class RecognitionService:
             "recognition_results": [entry.model_dump() for entry in result.entries],
             "total_entries": len(result.entries),
             "token_usage": api_result["token_usage"],
-            "cost_usd": api_result["cost_usd"],
+            "processing_time_seconds": api_result["processing_time_seconds"],
         }
 
         # 寫入 JSON 檔案

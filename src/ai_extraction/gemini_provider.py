@@ -5,6 +5,7 @@ Google Gemini Vision Provider
 """
 
 import base64
+import time
 
 from google import genai
 from google.genai import types
@@ -31,6 +32,8 @@ class GeminiVisionProvider(VisionProvider):
     async def recognize_batch(self, base64_images: list[str]) -> RecognitionResult:
         """批次辨識多張圖片"""
         try:
+            start_time = time.time()
+
             # 建立 contents：prompt + 圖片
             prompt = PromptTemplates.get_overtime_recognition_prompt()
             contents = [prompt]
@@ -64,26 +67,13 @@ class GeminiVisionProvider(VisionProvider):
                 "total_tokens": usage.total_token_count,
             }
 
-            # 計算成本
-            cost_usd = self.calculate_cost(
-                usage.prompt_token_count, usage.candidates_token_count
-            )
+            # 計算處理時間
+            processing_time = round(time.time() - start_time, 2)
 
             return {
                 "result": result,
                 "token_usage": token_usage,
-                "cost_usd": cost_usd,
+                "processing_time_seconds": processing_time,
             }
         except Exception as e:
             raise GeminiAPIError(f"Gemini API 呼叫失敗：{str(e)}") from e
-
-    @staticmethod
-    def calculate_cost(prompt_tokens: int, completion_tokens: int) -> float:
-        """計算 Gemini API 成本 (gemini-3-flash-preview 定價)
-
-        定價參考：https://ai.google.dev/pricing
-        """
-        # Gemini 3 Flash Preview 定價（預估，請確認實際價格）
-        input_cost = prompt_tokens * 0.10 / 1_000_000
-        output_cost = completion_tokens * 0.40 / 1_000_000
-        return round(input_cost + output_cost, 6)
