@@ -13,6 +13,9 @@ from src.ai_extraction.base_provider import RecognitionResult, VisionProvider
 from src.ai_extraction.prompt_templates import PromptTemplates
 from src.config import Config
 from src.models.overtime import OvertimeDocument
+from src.utils.logger import get_logger
+
+logger = get_logger("openai_provider")
 
 
 class VisionAPIError(Exception):
@@ -60,6 +63,7 @@ class OpenAIVisionProvider(VisionProvider):
         """
         try:
             start_time = time.time()
+            logger.info(f"開始 API 呼叫: model={self.model}, images={len(base64_images)}")
 
             # 取得 Prompt 範本
             prompt = PromptTemplates.get_overtime_recognition_prompt()
@@ -102,14 +106,21 @@ class OpenAIVisionProvider(VisionProvider):
             # 計算處理時間
             processing_time = round(time.time() - start_time, 2)
 
+            logger.info(f"API 呼叫成功: tokens={token_usage['total_tokens']}, time={processing_time}s")
             return {"result": result, "token_usage": token_usage, "processing_time_seconds": processing_time}
 
         except openai.AuthenticationError as e:
+            request_id = getattr(e, "request_id", None)
+            logger.error(f"API Key 認證失敗{f', request_id={request_id}' if request_id else ''}")
             raise VisionAPIError("API Key 無效，請檢查 .env 檔案中的 OPENAI_API_KEY 設定") from e
         except openai.APIConnectionError as e:
+            logger.error(f"網路連線失敗: {e}")
             raise VisionAPIError("網路連線失敗，請檢查網路連線後再試") from e
         except openai.RateLimitError as e:
+            request_id = getattr(e, "request_id", None)
+            logger.error(f"超過 API 速率限制{f', request_id={request_id}' if request_id else ''}")
             raise VisionAPIError("API 使用量已達上限，請稍後再試或升級方案") from e
         except Exception as e:
+            logger.exception("未預期的錯誤")
             raise VisionAPIError(f"API 呼叫失敗：{str(e)}") from e
 

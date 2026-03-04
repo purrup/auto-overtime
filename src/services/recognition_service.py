@@ -18,6 +18,9 @@ from src.config import Config
 from src.data_handling.json_handler import JSONDataHandler
 from src.image_processing.encoder import ImageEncoder, ImageEncodingError
 from src.models.overtime import OvertimeDocument
+from src.utils.logger import get_logger
+
+logger = get_logger("recognition_service")
 
 
 class RecognitionError(Exception):
@@ -76,12 +79,16 @@ class RecognitionService:
         if session_id is None:
             session_id = str(uuid.uuid4())
 
+        logger.info(f"開始處理 session={session_id}, images={len(image_paths)}")
+
         try:
             # 步驟 1：編碼圖片
             base64_images = await self._encode_images(image_paths)
+            logger.info(f"圖片編碼完成: {len(base64_images)} 張")
 
             # 步驟 2：調用 Vision API
             api_result = await self.vision_provider.recognize_batch(base64_images)
+            logger.info("Vision API 調用完成")
 
             # 步驟 3：儲存結果
             # 根據 AI Provider 取得對應的模型名稱
@@ -104,6 +111,7 @@ class RecognitionService:
                 metadata=metadata,
                 session_id=session_id,
             )
+            logger.info(f"結果已儲存: {output_path}")
 
             return {
                 "session_id": session_id,
@@ -116,10 +124,13 @@ class RecognitionService:
             }
 
         except ImageEncodingError as e:
+            logger.exception("圖片編碼失敗")
             raise RecognitionError(f"圖片編碼失敗：{str(e)}") from e
         except (VisionAPIError, GeminiAPIError) as e:
+            logger.exception("AI 辨識失敗")
             raise RecognitionError(f"AI 辨識失敗：{str(e)}") from e
         except Exception as e:
+            logger.exception("辨識過程發生未預期錯誤")
             raise RecognitionError(f"辨識過程發生錯誤：{str(e)}") from e
 
     async def _encode_images(self, image_paths: list[str]) -> list[str]:

@@ -8,12 +8,15 @@ import base64
 import time
 
 from google import genai
-from google.genai import types
+from google.genai import errors, types
 
 from src.ai_extraction.base_provider import RecognitionResult, VisionProvider
 from src.ai_extraction.prompt_templates import PromptTemplates
 from src.config import Config
 from src.models.overtime import OvertimeDocument
+from src.utils.logger import get_logger
+
+logger = get_logger("gemini_provider")
 
 
 class GeminiAPIError(Exception):
@@ -33,6 +36,7 @@ class GeminiVisionProvider(VisionProvider):
         """批次辨識多張圖片"""
         try:
             start_time = time.time()
+            logger.info(f"開始 API 呼叫: model={self.model}, images={len(base64_images)}")
 
             # 建立 contents：prompt + 圖片
             prompt = PromptTemplates.get_overtime_recognition_prompt()
@@ -69,11 +73,27 @@ class GeminiVisionProvider(VisionProvider):
 
             # 計算處理時間
             processing_time = round(time.time() - start_time, 2)
+            logger.info(f"API 呼叫成功: tokens={token_usage['total_tokens']}, time={processing_time}s")
 
             return {
                 "result": result,
                 "token_usage": token_usage,
                 "processing_time_seconds": processing_time,
             }
+        except errors.APIError as e:
+            error_msg = f"API 錯誤 {e.code}: {e.message}"
+            logger.error(error_msg)
+
+            if e.code == 429:
+                raise GeminiAPIError("API 使用量已達上限，請稍後再試") from e
+            elif e.code == 403:
+                raise GeminiAPIError("API Key 權限不足，請檢查設定") from e
+            elif e.code in [500, 503]:
+                raise GeminiAPIError("Gemini 服務暫時不可用，請稍後再試") from e
+            elif e.code == 504:
+                raise GeminiAPIError("請求超時，請減少圖片數量或稍後再試") from e
+            else:
+                raise GeminiAPIError(f"Gemini API 呼叫失敗：{e.message}") from e
         except Exception as e:
+            logger.exception("未預期的錯誤")
             raise GeminiAPIError(f"Gemini API 呼叫失敗：{str(e)}") from e
