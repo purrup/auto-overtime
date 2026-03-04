@@ -1,5 +1,9 @@
-# UI 框架
-flet==0.28.2
+# Web 框架
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+jinja2>=3.1.0
+python-multipart>=0.0.20
+aiofiles>=24.1.0
 
 # AI 整合
 openai>=2.11.0

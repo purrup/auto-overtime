@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}辨識結果 - 加班單辨識系統{% endblock %}
+
+{% block content %}
+<div class="result-section">
+    <div class="result-header">
+        <a href="/" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            返回首頁
+        </a>
+        <div class="save-status" id="save-status">
+            <span class="status-saved" id="status-saved">已儲存</span>
+            <span class="status-saving" id="status-saving" hidden>
+                <span class="spinner-small"></span>
+                儲存中...
+            </span>
+        </div>
+    </div>
+
+    <h2 class="section-title">辨識結果</h2>
+
+    <!-- 統計資訊 -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-label">處理圖片</span>
+            <span class="stat-value">{{ image_count }} 張</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">辨識記錄</span>
+            <span class="stat-value">{{ total_entries }} 筆</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">總加班時數</span>
+            <span class="stat-value">{{ total_hours }} 小時</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">API 成本</span>
+            <span class="stat-value">${{ "%.4f"|format(cost_usd) }}</span>
+        </div>
+    </div>
+
+    <!-- 圖片縮圖區 -->
+    <div class="image-thumbnails">
+        <h3 class="subsection-title">原始圖片</h3>
+        <div class="thumbnail-list">
+            {% for filename in image_filenames %}
+            <div class="thumbnail-item" data-image="/image/{{ session_id }}/{{ filename }}">
+                <img src="/image/{{ session_id }}/{{ filename }}" alt="{{ filename }}" loading="lazy">
+                <span class="thumbnail-name">{{ filename }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 辨識記錄卡片 -->
+    <div class="entries-section">
+        <h3 class="subsection-title">加班記錄 ({{ entries|length }} 筆)</h3>
+        <div class="entry-cards" id="entry-cards" data-session-id="{{ session_id }}">
+            {% for entry in entries %}
+            <div class="entry-card" data-index="{{ loop.index0 }}">
+                <div class="card-header">
+                    <span class="card-number">#{{ loop.index }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">員工姓名</label>
+                            <input type="text" class="form-input" name="employee_name"
+                                   value="{{ entry.employee_name }}" data-field="employee_name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">日期</label>
+                            <input type="date" class="form-input" name="date"
+                                   value="{{ entry.date }}" data-field="date">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">開始時間</label>
+                            <input type="time" class="form-input" name="overtime_start_time"
+                                   value="{{ entry.overtime_start_time }}" data-field="overtime_start_time">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">結束時間</label>
+                            <input type="time" class="form-input" name="overtime_end_time"
+                                   value="{{ entry.overtime_end_time }}" data-field="overtime_end_time">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">時數</label>
+                            <input type="number" class="form-input" name="hours"
+                                   value="{{ entry.hours }}" step="0.5" min="0" data-field="hours">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group form-group-wide">
+                            <label class="form-label">事由</label>
+                            <input type="text" class="form-input" name="overtime_reason"
+                                   value="{{ entry.overtime_reason }}" data-field="overtime_reason">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">加班類型</label>
+                            <select class="form-input" name="overtime_type" data-field="overtime_type">
+                                <option value="加班費" {% if entry.overtime_type == '加班費' %}selected{% endif %}>加班費</option>
+                                <option value="補休" {% if entry.overtime_type == '補休' %}selected{% endif %}>補休</option>
+                                <option value="平日加班" {% if entry.overtime_type == '平日加班' %}selected{% endif %}>平日加班</option>
+                                <option value="假日加班" {% if entry.overtime_type == '假日加班' %}selected{% endif %}>假日加班</option>
+                                <option value="國定假日" {% if entry.overtime_type == '國定假日' %}selected{% endif %}>國定假日</option>
+                                <option value="無法辨識" {% if entry.overtime_type == '無法辨識' %}selected{% endif %}>無法辨識</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 匯出按鈕 -->
+    <div class="export-section">
+        <a href="/export/{{ session_id }}/excel" class="btn btn-primary">匯出 Excel</a>
+        <a href="/export/{{ session_id }}/csv" class="btn btn-secondary">匯出 CSV</a>
+    </div>
+</div>
+
+<!-- 圖片燈箱 -->
+<div class="lightbox" id="lightbox" hidden>
+    <div class="lightbox-backdrop"></div>
+    <div class="lightbox-content">
+        <button class="lightbox-close" id="lightbox-close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <img class="lightbox-image" id="lightbox-image" src="" alt="放大圖片">
+    </div>
+</div>
+{% endblock %}

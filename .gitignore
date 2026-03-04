@@ -32,3 +32,6 @@ ENV/
 output/*.csv
 output/*.xlsx
 output/*.json
+
+# 上傳暫存目錄
+uploads/

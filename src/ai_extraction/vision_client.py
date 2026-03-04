@@ -5,11 +5,11 @@ Vision API 客戶端模組
 """
 
 import openai
-from openai import OpenAI
+from openai import AsyncOpenAI
 
-from ai_extraction.prompt_templates import PromptTemplates
-from config import Config
-from models.overtime import OvertimeDocument
+from src.ai_extraction.prompt_templates import PromptTemplates
+from src.config import Config
+from src.models.overtime import OvertimeDocument
 
 
 class VisionAPIError(Exception):
@@ -29,10 +29,10 @@ class VisionClient:
 
         使用 Config.OPENAI_API_KEY 和 Config.OPENAI_MODEL
         """
-        self.client = OpenAI(api_key=Config.OPENAI_API_KEY)
+        self.client = AsyncOpenAI(api_key=Config.OPENAI_API_KEY)
         self.model = Config.OPENAI_MODEL
 
-    def recognize_batch(self, base64_images: list[str]) -> dict:
+    async def recognize_batch(self, base64_images: list[str]) -> dict:
         """批次辨識多張圖片
 
         單次 API 請求處理所有圖片，使用 Structured Outputs 確保格式正確。
@@ -76,7 +76,7 @@ class VisionClient:
                 )
 
             # 呼叫 OpenAI Vision API（使用 Structured Outputs）
-            completion = self.client.beta.chat.completions.parse(
+            completion = await self.client.beta.chat.completions.parse(
                 model=self.model,
                 messages=[{"role": "user", "content": content}],
                 response_format=OvertimeDocument,  # Structured Outputs
