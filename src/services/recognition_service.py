@@ -11,7 +11,9 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
-from src.ai_extraction.vision_client import VisionAPIError, VisionClient
+from src.ai_extraction.gemini_provider import GeminiAPIError
+from src.ai_extraction.openai_provider import VisionAPIError
+from src.ai_extraction.provider_factory import get_vision_provider
 from src.config import Config
 from src.data_handling.json_handler import JSONDataHandler
 from src.image_processing.encoder import ImageEncoder, ImageEncodingError
@@ -40,7 +42,7 @@ class RecognitionService:
         self.uploads_dir = uploads_dir or Path("uploads")
         self.output_dir = output_dir or Config.OUTPUT_DIR
         self.encoder = ImageEncoder()
-        self.vision_client = VisionClient()
+        self.vision_provider = get_vision_provider()
 
     async def process_images(self, image_paths: list[str], session_id: str | None = None) -> dict:
         """處理多張圖片進行 OCR 辨識
@@ -79,13 +81,20 @@ class RecognitionService:
             base64_images = await self._encode_images(image_paths)
 
             # 步驟 2：調用 Vision API
-            api_result = await self.vision_client.recognize_batch(base64_images)
+            api_result = await self.vision_provider.recognize_batch(base64_images)
 
             # 步驟 3：儲存結果
+            # 根據 AI Provider 取得對應的模型名稱
+            if Config.AI_PROVIDER.lower() == "openai":
+                model_name = Config.OPENAI_MODEL
+            else:
+                model_name = Config.GEMINI_MODEL
+
             metadata = {
                 "session_id": session_id,
                 "timestamp": datetime.now().isoformat(),
-                "model": Config.OPENAI_MODEL,
+                "provider": Config.AI_PROVIDER,
+                "model": model_name,
                 "image_count": len(base64_images),
                 "image_paths": image_paths,
             }
@@ -108,7 +117,7 @@ class RecognitionService:
 
         except ImageEncodingError as e:
             raise RecognitionError(f"圖片編碼失敗：{str(e)}") from e
-        except VisionAPIError as e:
+        except (VisionAPIError, GeminiAPIError) as e:
             raise RecognitionError(f"AI 辨識失敗：{str(e)}") from e
         except Exception as e:
             raise RecognitionError(f"辨識過程發生錯誤：{str(e)}") from e

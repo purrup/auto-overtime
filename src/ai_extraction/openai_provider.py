@@ -1,12 +1,13 @@
 """
-Vision API 客戶端模組
+OpenAI Vision Provider 模組
 
-負責與 OpenAI Vision API 通訊，處理批次圖片辨識和錯誤處理。
+實作 VisionProvider 介面，負責與 OpenAI Vision API 通訊，處理批次圖片辨識和錯誤處理。
 """
 
 import openai
 from openai import AsyncOpenAI
 
+from src.ai_extraction.base_provider import RecognitionResult, VisionProvider
 from src.ai_extraction.prompt_templates import PromptTemplates
 from src.config import Config
 from src.models.overtime import OvertimeDocument
@@ -18,21 +19,21 @@ class VisionAPIError(Exception):
     pass
 
 
-class VisionClient:
-    """OpenAI Vision API 客戶端
+class OpenAIVisionProvider(VisionProvider):
+    """OpenAI Vision API Provider
 
-    負責與 OpenAI Vision API 通訊，處理批次圖片辨識。
+    實作 VisionProvider 介面，負責與 OpenAI Vision API 通訊，處理批次圖片辨識。
     """
 
     def __init__(self):
-        """初始化 Vision API 客戶端
+        """初始化 OpenAI Vision Provider
 
         使用 Config.OPENAI_API_KEY 和 Config.OPENAI_MODEL
         """
         self.client = AsyncOpenAI(api_key=Config.OPENAI_API_KEY)
         self.model = Config.OPENAI_MODEL
 
-    async def recognize_batch(self, base64_images: list[str]) -> dict:
+    async def recognize_batch(self, base64_images: list[str]) -> RecognitionResult:
         """批次辨識多張圖片
 
         單次 API 請求處理所有圖片，使用 Structured Outputs 確保格式正確。
@@ -41,15 +42,16 @@ class VisionClient:
             base64_images: Base64 編碼的圖片列表
 
         Returns:
-            {
-                "result": OvertimeDocument,  # Pydantic 模型
-                "token_usage": {
-                    "prompt_tokens": int,
-                    "completion_tokens": int,
-                    "total_tokens": int
-                },
-                "cost_usd": float
-            }
+            RecognitionResult: 包含辨識結果、token 使用量和費用的字典
+                {
+                    "result": OvertimeDocument,  # Pydantic 模型
+                    "token_usage": {
+                        "prompt_tokens": int,
+                        "completion_tokens": int,
+                        "total_tokens": int
+                    },
+                    "cost_usd": float
+                }
 
         Raises:
             VisionAPIError: API 呼叫失敗

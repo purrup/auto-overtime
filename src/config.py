@@ -59,9 +59,16 @@ class Config:
     # 載入環境變數
     _env_loaded = _load_env_file()
 
-    # API 配置
+    # AI Provider 設定
+    AI_PROVIDER: str = os.getenv("AI_PROVIDER", "gemini")  # 預設使用 gemini
+
+    # OpenAI 設定
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-5-mini-2025-08-07")
+
+    # Gemini 設定
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
 
     # 檔案配置
     ALLOWED_EXTENSIONS: tuple = ("png", "jpg", "jpeg")
@@ -82,15 +89,23 @@ class Config:
         Raises:
             ConfigError: 當配置無效時拋出異常
         """
-        # 檢查 API Key 是否存在
-        if not cls.OPENAI_API_KEY:
+        # 根據 AI_PROVIDER 驗證對應的 API Key
+        if cls.AI_PROVIDER == "openai":
+            if not cls.OPENAI_API_KEY:
+                raise ConfigError(
+                    "找不到 OPENAI_API_KEY 環境變數\n請建立 .env 檔案並設定 OPENAI_API_KEY=your-api-key"
+                )
+            if cls.OPENAI_API_KEY == "sk-your-api-key-here":
+                raise ConfigError("請設定有效的 OPENAI_API_KEY（目前為範例值）")
+        elif cls.AI_PROVIDER == "gemini":
+            if not cls.GEMINI_API_KEY:
+                raise ConfigError(
+                    "找不到 GEMINI_API_KEY 環境變數\n請建立 .env 檔案並設定 GEMINI_API_KEY=your-api-key"
+                )
+        else:
             raise ConfigError(
-                "找不到 OPENAI_API_KEY 環境變數\n請建立 .env 檔案並設定 OPENAI_API_KEY=your-api-key"
+                f"不支援的 AI_PROVIDER: {cls.AI_PROVIDER}\n支援的選項: openai, gemini"
             )
-
-        # 檢查是否為範例值
-        if cls.OPENAI_API_KEY == "sk-your-api-key-here":
-            raise ConfigError("請設定有效的 OPENAI_API_KEY（目前為範例值）")
 
         # 建立輸出目錄
         try:
@@ -100,7 +115,12 @@ class Config:
             raise ConfigError(f"無法建立輸出目錄 {cls.OUTPUT_DIR}: {e}") from e
 
         # 驗證成功訊息
-        print("✓ OpenAI API Key 已載入")
-        print(f"✓ 使用模型: {cls.OPENAI_MODEL}")
+        print(f"✓ AI Provider: {cls.AI_PROVIDER}")
+        if cls.AI_PROVIDER == "openai":
+            print("✓ OpenAI API Key 已載入")
+            print(f"✓ 使用模型: {cls.OPENAI_MODEL}")
+        elif cls.AI_PROVIDER == "gemini":
+            print("✓ Gemini API Key 已載入")
+            print(f"✓ 使用模型: {cls.GEMINI_MODEL}")
         print(f"✓ 支援格式: {', '.join(cls.ALLOWED_EXTENSIONS).upper()}")
         print("✓ 配置驗證完成\n")

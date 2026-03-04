@@ -7,6 +7,7 @@ aiofiles>=24.1.0
 
 # AI 整合
 openai>=2.11.0
+google-genai>=1.0.0
 
 # 資料處理
 pandas>=2.0.3
