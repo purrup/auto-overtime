@@ -247,6 +247,15 @@
 
     // ===== 結果頁面功能 =====
 
+    /**
+     * 自動調整 textarea 高度
+     * @param {HTMLTextAreaElement} textarea - textarea 元素
+     */
+    function autoResizeTextarea(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
     const entryCards = document.getElementById('entry-cards');
     const statusSaved = document.getElementById('status-saved');
     const statusSaving = document.getElementById('status-saving');
@@ -256,6 +265,17 @@
 
         // 收集所有輸入欄位
         const inputs = entryCards.querySelectorAll('.form-input');
+
+        // 初始化 textarea 高度並綁定事件
+        const textareas = entryCards.querySelectorAll('.form-textarea');
+        textareas.forEach(textarea => {
+            textarea.addEventListener('input', () => autoResizeTextarea(textarea));
+        });
+
+        // 等待下一幀確保 CSS 套用完成後再計算高度
+        requestAnimationFrame(() => {
+            textareas.forEach(autoResizeTextarea);
+        });
 
         /**
          * 顯示儲存狀態

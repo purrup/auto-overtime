@@ -459,6 +459,15 @@ body {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
+/* Textarea 自動調整高度 */
+.form-textarea {
+    resize: none;
+    overflow: hidden;
+    min-height: 36px;
+    line-height: 1.5;
+    font-family: inherit;
+}
+
 /* ===== Export Section ===== */
 .export-section {
     display: flex;
