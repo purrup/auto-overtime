@@ -192,9 +192,10 @@
 
     // 表單提交處理
     if (uploadForm) {
-        uploadForm.addEventListener('submit', (e) => {
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();  // 阻止預設表單提交
+
             if (selectedFiles.length === 0) {
-                e.preventDefault();
                 alert('請先選擇檔案');
                 return;
             }
@@ -207,6 +208,40 @@
                 btnLoading.hidden = false;
             }
             submitBtn.disabled = true;
+
+            // 使用 Fetch API 提交表單
+            try {
+                const formData = new FormData(uploadForm);
+
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                    redirect: 'follow',  // 明確允許跟隨重導（MDN 推薦）
+                });
+                // 注意：不要手動設定 Content-Type，瀏覽器會自動處理 multipart/form-data
+
+                if (!response.ok) {
+                    // 嘗試解析錯誤回應
+                    const html = await response.text();
+                    document.body.innerHTML = html;
+                    return;
+                }
+
+                // response.url 是最終的重導 URL（如 /result/{session_id}）
+                // 導航到結果頁面
+                window.location.href = response.url;
+
+            } catch (error) {
+                console.error('上傳錯誤:', error);
+                alert('上傳失敗，請重試');
+
+                // 重置按鈕狀態
+                if (btnText && btnLoading) {
+                    btnText.hidden = false;
+                    btnLoading.hidden = true;
+                }
+                submitBtn.disabled = false;
+            }
         });
     }
 
