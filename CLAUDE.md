@@ -15,8 +15,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **前端**: Jinja2 模板 + 原生 JavaScript
   - 伺服器端渲染 (SSR)
   - 拖放上傳、可編輯表格、圖片預覽
-- **AI 引擎**: OpenAI GPT 多模態模型 (Vision API)
-  - 使用 AsyncOpenAI client
+- **AI 引擎**: 多 Provider 支援（預設 Gemini）
+  - **Google Gemini** (預設): `gemini-3-flash-preview`
+  - **OpenAI GPT**: `gpt-4o-mini`
+  - 透過 `AI_PROVIDER` 環境變數切換
   - Structured Outputs 確保回應格式正確
   - 特別優化繁體中文手寫字跡辨識
 
@@ -33,7 +35,10 @@ src/
 ├── routers/
 │   └── ocr.py                 # API 路由
 ├── ai_extraction/
-│   ├── vision_client.py       # OpenAI Vision API 客戶端 (async)
+│   ├── base_provider.py       # Vision Provider 抽象介面
+│   ├── openai_provider.py     # OpenAI Vision API 實作
+│   ├── gemini_provider.py     # Google Gemini Vision API 實作
+│   ├── provider_factory.py    # Provider 工廠
 │   └── prompt_templates.py    # AI Prompt 範本
 ├── image_processing/
 │   └── encoder.py             # 圖片 Base64 編碼
@@ -80,14 +85,23 @@ src/
 ### 環境變數
 
 建立 `.env` 檔案：
-```
-OPENAI_API_KEY=your-api-key
+```bash
+# AI Provider 設定（gemini 或 openai）
+AI_PROVIDER=gemini
+
+# Gemini 設定（預設 Provider）
+GEMINI_API_KEY=your-gemini-api-key
+GEMINI_MODEL=gemini-3-flash-preview
+
+# OpenAI 設定（備用）
+OPENAI_API_KEY=your-openai-api-key
 OPENAI_MODEL=gpt-4o-mini
 ```
 
 ## 開發注意事項
 
-- **非同步設計**: VisionClient 使用 AsyncOpenAI，路由和服務層都是 async
+- **多 Provider 架構**: 使用 Provider 抽象層和工廠模式，支援 Gemini 和 OpenAI
+- **非同步設計**: Vision Provider 使用 async/await，路由和服務層都是 async
 - **AI Prompt 設計是核心**: 需要針對特定的表格格式與繁體中文手寫字調校
 - **Session 管理**: 使用 UUID 作為 session_id 追蹤每次辨識會話
 - **自動儲存**: 前端使用 debounce 防抖，編輯後 500ms 自動儲存

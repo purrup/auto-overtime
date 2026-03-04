@@ -5,7 +5,8 @@
 ## 功能特色
 
 - 支援批次處理加班單掃描檔 (PNG/JPG)
-- GPT Vision API 智慧辨識手寫內容
+- **多 AI Provider 支援**：Google Gemini（預設）/ OpenAI GPT
+- AI Vision API 智慧辨識手寫內容
 - 互動式校對介面（可編輯表格、圖片預覽）
 - 自動儲存編輯結果
 
@@ -23,10 +24,20 @@ pip install -r requirements.txt
 
 建立 `.env` 檔案：
 
-```
-OPENAI_API_KEY=your-api-key
+```bash
+# AI Provider 設定（gemini 或 openai）
+AI_PROVIDER=gemini
+
+# Gemini 設定（預設 Provider）
+GEMINI_API_KEY=your-gemini-api-key
+GEMINI_MODEL=gemini-3-flash-preview
+
+# OpenAI 設定（備用）
+OPENAI_API_KEY=your-openai-api-key
 OPENAI_MODEL=gpt-4o-mini
 ```
+
+**取得 Gemini API Key**：前往 https://aistudio.google.com/ → Get API Key → Create API Key
 
 ## 使用
 
@@ -53,7 +64,9 @@ Cmd+Shift+B
 
 - **後端**: FastAPI (Python async web framework)
 - **前端**: Jinja2 模板 + 原生 JavaScript
-- **AI 引擎**: OpenAI GPT Vision API (AsyncOpenAI)
+- **AI 引擎**:
+  - Google Gemini Vision API（預設）
+  - OpenAI GPT Vision API（備用）
 - **資料驗證**: Pydantic
 
 ## API 端點
