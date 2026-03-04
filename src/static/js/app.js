@@ -26,12 +26,12 @@
     }
 
     /**
-     * 檢查檔案類型是否為圖片或 PDF
+     * 檢查檔案類型是否為圖片
      * @param {File} file - 檔案物件
      * @returns {boolean}
      */
     function isValidFileType(file) {
-        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+        const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
         return validTypes.includes(file.type);
     }
 

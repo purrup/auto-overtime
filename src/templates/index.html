@@ -5,7 +5,7 @@
 {% block content %}
 <div class="upload-section">
     <h2 class="section-title">上傳加班單</h2>
-    <p class="section-desc">支援 JPG、PNG、PDF 格式，可一次上傳多個檔案</p>
+    <p class="section-desc">支援 JPG、PNG 格式，可一次上傳多個檔案</p>
 
     <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
         <div class="dropzone" id="dropzone">
@@ -18,7 +18,7 @@
                 <p class="dropzone-text">將檔案拖放至此處</p>
                 <p class="dropzone-subtext">或點擊選擇檔案</p>
             </div>
-            <input type="file" id="file-input" name="files" multiple accept="image/*,.pdf" hidden>
+            <input type="file" id="file-input" name="files" multiple accept="image/jpeg,image/png,image/jpg" hidden>
         </div>
 
         <div class="file-list" id="file-list">
