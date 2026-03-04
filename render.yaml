@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: auto-overtime
+    runtime: python
+    plan: free
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-5-mini-2025-08-07gpt-4o-mini
+      - key: OUTPUT_DIR
+        value: ./output
+      - key: PYTHON_VERSION
+        value: "3.13"
+    healthCheckPath: /

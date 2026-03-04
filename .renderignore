@@ -1,0 +1,12 @@
+.env
+.vscode/
+.DS_Store
+.git/
+__pycache__/
+*.pyc
+.ruff_cache/
+tests/
+poc_results/
+uploads/
+output/
+doc/
