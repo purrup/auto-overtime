@@ -29,8 +29,7 @@ def _load_env_file():
         print("✓ 從系統環境變數載入配置")
         return True
 
-    # 優先順序 2: src/assets/.env (打包後的位置)
-    # 這是 Flet 官方建議的配置檔案存放位置
+    # 優先順序 2: src/assets/.env (備用位置)
     assets_env = Path(__file__).parent / "assets" / ".env"
     if assets_env.exists():
         load_dotenv(assets_env)

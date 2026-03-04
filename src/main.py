@@ -1,58 +1,81 @@
 #!/usr/bin/env python3
 """
 加班單辨識自動化系統
-主程式進入點
+FastAPI Web 應用程式進入點
 """
 
-import flet as ft
+from pathlib import Path
 
-from config import Config
-from ui.app import OvertimeApp
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
+from src.config import Config
+from src.routers import ocr
+
+# 取得專案路徑
+SRC_DIR = Path(__file__).parent
+PROJECT_ROOT = SRC_DIR.parent
+
+# 定義目錄路徑
+STATIC_DIR = SRC_DIR / "static"
+TEMPLATES_DIR = SRC_DIR / "templates"
+UPLOADS_DIR = PROJECT_ROOT / "uploads"
+
+# 建立 FastAPI 應用程式
+app = FastAPI(
+    title="加班單辨識系統",
+    description="使用 AI 視覺模型將手寫加班單自動轉換為結構化數位報表",
+    version="1.0.0",
+)
+
+# 建立必要目錄
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+Config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+# 掛載靜態檔案
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+# 設定 Jinja2 模板引擎
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+# 初始化路由並包含
+ocr.init_router(templates_instance=templates, uploads_dir=UPLOADS_DIR)
+app.include_router(ocr.router)
 
 
-def main(page: ft.Page) -> None:
+@app.on_event("startup")
+async def startup_event():
+    """應用程式啟動事件
+
+    驗證配置並顯示啟動資訊。
     """
-    應用程式主函數
+    print("=" * 50)
+    print("加班單辨識系統 - Web 版")
+    print("=" * 50)
 
-    Args:
-        page: Flet Page 實例
-    """
+    # 驗證配置（不會拋出異常，只顯示警告）
     try:
-        # 驗證配置
         Config.validate()
-
-        # 建立應用程式實例
-        OvertimeApp(page)
-
     except Exception as e:
-        # 定義關閉應用程式的回調函數
-        async def close_app(e) -> None:
-            """關閉應用程式"""
-            await page.window.close()
+        print(f"! 配置警告：{e}")
+        print("  請確保 .env 檔案中設定了正確的 OPENAI_API_KEY")
 
-        # 建立錯誤對話框
-        error_dialog = ft.AlertDialog(
-            modal=True,
-            title=ft.Text("啟動失敗", weight=ft.FontWeight.BOLD),
-            content=ft.Column(
-                [
-                    ft.Icon(name=ft.Icons.ERROR_OUTLINED, size=48, color=ft.Colors.RED_400),
-                    ft.Text("應用程式啟動失敗", size=16),
-                    ft.Container(height=10),
-                    ft.Text(str(e), size=14, color=ft.Colors.GREY_700),
-                ],
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                tight=True,
-            ),
-            actions=[ft.TextButton(text="關閉", on_click=close_app)],
-            actions_alignment=ft.MainAxisAlignment.END,
-        )
-
-        # 顯示錯誤對話框
-        page.overlay.append(error_dialog)
-        error_dialog.open = True
-        page.update()
+    print(f"靜態檔案目錄：{STATIC_DIR}")
+    print(f"模板目錄：{TEMPLATES_DIR}")
+    print(f"上傳目錄：{UPLOADS_DIR}")
+    print(f"輸出目錄：{Config.OUTPUT_DIR}")
+    print("=" * 50)
 
 
+# 開發模式執行
 if __name__ == "__main__":
-    ft.app(target=main)
+    import uvicorn
+
+    uvicorn.run(
+        "src.main:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True,
+        reload_dirs=[str(SRC_DIR)],
+    )
